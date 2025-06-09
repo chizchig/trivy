@@ -3,12 +3,6 @@ kind: Kustomization
 resources:
   - ../../base/
 
-patchesStrategicMerge:
-  - |
-    apiVersion: apps/v1
-    kind: Deployment
-    metadata:
-      name: sky-deployment
-      namespace: argocd
-    spec:
-      replicas: 4
+replicas:
+  - name: sky-deployment 
+    count: 4

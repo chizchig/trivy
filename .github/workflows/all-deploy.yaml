@@ -68,7 +68,7 @@ jobs:
       with:
         path: 'base/ overlay/'
         output_path: 'kics-results.json'
-        format: 'json'
+        output_formats: 'json'
         fail_on: 'HIGH'
 
     - name: Upload KICS Results
