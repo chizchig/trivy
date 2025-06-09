@@ -14,7 +14,7 @@ spec:
     type: RollingUpdate
     rollingUpdate:
       maxUnavailable: 0
-      maxSurge: 4
+      maxSurge: 1
   template:
     metadata:
       labels:
@@ -22,14 +22,14 @@ spec:
     spec:
       serviceAccountName: sky-service-account
       imagePullSecrets:
-        - name: sky-access-token
+        - name: sky-access-token  # Optional, can be removed for public image
       securityContext:
         runAsUser: 1000
         runAsGroup: 1000
         fsGroup: 1000
       containers:
         - name: sky
-          image: shadowhub/cocomaster
+          image: shadowhub/cocomaster:20240506044802  # Specify the tag
           imagePullPolicy: Always
           ports:
             - containerPort: 3000

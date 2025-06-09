@@ -39,22 +39,15 @@ jobs:
         sudo systemctl start docker
         sudo systemctl enable docker
 
-    - name: Log in to Docker Registry
-      run: |
-        echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-      env:
-        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-
     - name: Pull Docker Image
       run: |
-        docker pull shadowhub/cocomaster
+        docker pull shadowhub/cocomaster:20240506044802
 
     - name: Run Trivy Vulnerability Scanner
       uses: aquasecurity/trivy-action@0.30.0
       with:
-        image-ref: 'shadowhub/cocomaster'
-        format: 'sarif'  # Use 'format' instead of 'trivy-flags' for SARIF output
+        image-ref: 'shadowhub/cocomaster:20240506044802'
+        format: 'sarif'
         output: 'trivy-results.sarif'
         severity: 'CRITICAL,HIGH'
         ignore-unfixed: true
@@ -113,11 +106,12 @@ jobs:
 
     - name: Create Image Pull Secret in Minikube
       run: |
+        # Optional: Remove this step if not needed for a public image
         kubectl create secret docker-registry sky-access-token \
           --docker-username=${{ secrets.DOCKER_USERNAME }} \
           --docker-password=${{ secrets.DOCKER_PASSWORD }} \
           --docker-server=https://index.docker.io/v1/ \
-          -n argocd
+          -n argocd --dry-run=client -o yaml | kubectl apply -f -
 
     - name: Deploy to Minikube
       run: |
