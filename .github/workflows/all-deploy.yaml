@@ -102,6 +102,12 @@ jobs:
       run: |
         kubectl config current-context
 
+    - name: Debug Kustomize Files
+      run: |
+        ls -la base/
+        cat base/kustomization.yaml
+        kustomize build overlay/dev --enable-alpha-plugins
+
     - name: Apply Kustomize Configuration
       run: |
         kustomize build overlay/dev | kubectl apply -f -
