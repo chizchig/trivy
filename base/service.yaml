@@ -14,3 +14,4 @@ spec:
     protocol: TCP
   selector:
     app: skye-app
+  type: ClusterIP
