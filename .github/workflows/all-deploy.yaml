@@ -61,7 +61,7 @@ jobs:
     - name: Run KICS IaC Scan
       uses: checkmarx/kics-action@v1
       with:
-        path: deployments/sky-deployment.yml
+        path: deployments/sky-deployment.yaml
         output_path: kics-results.json
         format: json
 
@@ -98,11 +98,11 @@ jobs:
 
     - name: Create ArgoCD Namespace
       run: |
-        kubectl create namespace argocd --dry-run=client -o yml | kubectl apply -f -
+        kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
 
     - name: Create Service Account
       run: |
-        kubectl create serviceaccount sky-service-account -n argocd --dry-run=client -o yml | kubectl apply -f -
+        kubectl create serviceaccount sky-service-account -n argocd --dry-run=client -o yaml | kubectl apply -f -
 
     - name: Create Image Pull Secret in Minikube
       run: |
@@ -111,8 +111,8 @@ jobs:
           --docker-username=${{ secrets.DOCKER_USERNAME }} \
           --docker-password=${{ secrets.DOCKER_PASSWORD }} \
           --docker-server=https://index.docker.io/v1/ \
-          -n argocd --dry-run=client -o yml | kubectl apply -f -
+          -n argocd --dry-run=client -o yaml | kubectl apply -f -
 
     - name: Deploy to Minikube
       run: |
-        kubectl apply -f deployments/sky-deployment.yml
+        kubectl apply -f deployments/sky-deployment.yaml
