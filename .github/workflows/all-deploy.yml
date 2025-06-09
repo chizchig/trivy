@@ -1,4 +1,5 @@
 name: Deploy
+
 on:
   push:
     branches:
@@ -15,30 +16,32 @@ permissions:
 
 jobs:
   security_scan:
-    name: Trivy Vulnerability scan
+    name: Trivy Vulnerability Scan
     runs-on: ubuntu-latest
 
     steps:
-    - name: 'Checkout'
+    - name: Checkout
       uses: actions/checkout@v4
 
-    - name: 'Verify System Architecture'
+    - name: Verify System Architecture
       run: |
         uname -a
         arch
 
-    - name: 'Install Docker'
+    - name: Install Docker
       run: |
         sudo apt-get update
         sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common
-        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-        sudo add-apt-repository "deb [arch=amd64]https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+        # Download and add Docker's GPG key to trusted.gpg.d
+        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/docker.gpg
+        # Add Docker repository with proper spacing
+        sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
         sudo apt-get update
         sudo apt-get install -y docker-ce docker-ce-cli containerd.io
         sudo systemctl start docker
         sudo systemctl enable docker
 
-    - name: Run Trivy vulnerability scanner
+    - name: Run Trivy Vulnerability Scanner
       uses: aquasecurity/trivy-action@0.30.0
       with:
         image-ref: 'my-app:latest'
@@ -47,20 +50,22 @@ jobs:
         severity: 'CRITICAL,HIGH'
         ignore-unfixed: true
         scanners: 'vuln'
-    - name: 'Install Minikube'
-      run: |
-        curl Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
-        chmod +x minikube
-        sudo mv minnikube /usr/local/bin/
 
-    - name: 'Start Minikube'
+    - name: Install Minikube
       run: |
-       minikube start --driver=docker
+        curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+        chmod +x minikube-linux-amd64
+        sudo mv minikube-linux-amd64 /usr/local/bin/minikube
 
-    - name: 'Set up Kubeconfig for Minikube'
+    - name: Start Minikube
+      run: |
+        minikube start --driver=docker
+
+    - name: Set up Kubeconfig for Minikube
       run: |
         mkdir -p $HOME/.kube
         minikube update-context
 
-    - name: 'Verify Kubernetes Context'
-      run: Kubectl config current-context
+    - name: Verify Kubernetes Context
+      run: |
+        kubectl config current-context
