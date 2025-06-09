@@ -39,19 +39,23 @@ jobs:
         sudo systemctl start docker
         sudo systemctl enable docker
 
-    - name: Pull Docker Image
+    - name: Build Docker Image
       run: |
-        docker pull shadowhub/cocomaster
+        docker build -t shadowhub/cocomaster .
 
     - name: Run Trivy Vulnerability Scanner
       uses: aquasecurity/trivy-action@0.30.0
       with:
         image-ref: 'shadowhub/cocomaster'
-        format: 'sarif'
-        output: 'trivy-results.sarif'
+        trivy-flags: '--format sarif --output trivy-results.sarif'
         severity: 'CRITICAL,HIGH'
         ignore-unfixed: true
         scanners: 'vuln'
+
+    - name: Upload Trivy Results
+      uses: github/codeql-action/upload-sarif@v3
+      with:
+        sarif_file: trivy-results.sarif
 
     - name: Run KICS IaC Scan
       uses: checkmarx/kics-action@v1
@@ -59,6 +63,12 @@ jobs:
         path: deployments/sky-deployment.yaml
         output_path: kics-results.json
         format: json
+
+    - name: Upload KICS Results
+      uses: actions/upload-artifact@v4
+      with:
+        name: kics-results
+        path: kics-results.json
 
     - name: Install Minikube
       run: |
@@ -85,6 +95,14 @@ jobs:
       run: |
         kubectl config current-context
 
+    - name: Create ArgoCD Namespace
+      run: |
+        kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
+
+    - name: Create Service Account
+      run: |
+        kubectl create serviceaccount sky-service-account -n argocd --dry-run=client -o yaml | kubectl apply -f -
+
     - name: Deploy to Minikube
       run: |
-        kubectl apply -f deployments/sky-deployment.yml
+        kubectl apply -f deployments/sky-deployment.yaml
