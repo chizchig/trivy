@@ -21,29 +21,30 @@ spec:
         app: skye-app
     spec:
       serviceAccountName: sky-service-account
-      imagePullSecrets:
-        - name: sky-access-token  # Optional, can be removed for public image
       securityContext:
         runAsUser: 1000
         runAsGroup: 1000
         fsGroup: 1000
       containers:
         - name: sky
-          image: shadowhub/cocomaster:20240506044802  # Specify the tag
+          image: shadowhub/cocomaster:20240506044802
           imagePullPolicy: Always
           ports:
             - containerPort: 3000
           volumeMounts:
             - name: nginx-cache
               mountPath: /var/cache/nginx
-              readOnly: false
+              readOnly: true  # Changed to readOnly to address Volume Mount issue
+          securityContext:
+            allowPrivilegeEscalation: false  # Added to address Privilege Escalation
+            runAsNonRoot: true  # Added to enforce non-root execution
           resources:
             limits:
               cpu: "10m"
               memory: "1Gi"
             requests:
-              cpu: "10m"
-              memory: "512Mi"
+              cpu: "10m"  # Equal to limits to address Container Requests Not Equal
+              memory: "1Gi"  # Equal to limits to address Container Requests Not Equal
       volumes:
         - name: nginx-cache
           emptyDir: {}

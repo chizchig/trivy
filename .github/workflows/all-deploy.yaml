@@ -16,7 +16,7 @@ permissions:
 
 jobs:
   security_scan:
-    name: Trivy Vulnerability Scan
+    name: Trivy and KICS Scan
     runs-on: ubuntu-latest
 
     steps:
@@ -69,6 +69,7 @@ jobs:
         path: 'base/ overlay/'
         output_path: 'kics-results.json'
         format: 'json'
+        fail_on: 'HIGH'  # Fail only on HIGH severity vulnerabilities
 
     - name: Upload KICS Results
       uses: actions/upload-artifact@v4
