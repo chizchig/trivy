@@ -14,7 +14,7 @@ spec:
     type: RollingUpdate
     rollingUpdate:
       maxUnavailable: 0
-      maxSurge: 1
+      maxSurge: 4
   template:
     metadata:
       labels:
@@ -24,9 +24,9 @@ spec:
       imagePullSecrets:
         - name: sky-access-token
       securityContext:
-        runAsUser: 1000   # Non-root user ID
-        runAsGroup: 1000  # Non-root group ID
-        fsGroup: 1000     # Ensure group ownership of mounted volumes
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
       containers:
         - name: sky
           image: shadowhub/cocomaster
@@ -35,10 +35,8 @@ spec:
             - containerPort: 3000
           volumeMounts:
             - name: nginx-cache
-              mountPath: /var/cache/nginx  # Mounting emptyDir here
+              mountPath: /var/cache/nginx
               readOnly: false
-          securityContext:
-            runAsUser: 0  # Note: This overrides the pod-level runAsUser
           resources:
             limits:
               cpu: "10m"
