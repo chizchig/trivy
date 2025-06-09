@@ -54,9 +54,10 @@ jobs:
       uses: aquasecurity/trivy-action@0.30.0
       with:
         image-ref: 'shadowhub/cocomaster'
-        trivy-flags: '--format sarif --output trivy-results.sarif'
+        format: 'sarif'  # Use 'format' instead of 'trivy-flags' for SARIF output
+        output: 'trivy-results.sarif'
         severity: 'CRITICAL,HIGH'
-       .ignore-unfixed: true
+        ignore-unfixed: true
         scanners: 'vuln'
 
     - name: Upload Trivy Results
