@@ -58,18 +58,23 @@ jobs:
       with:
         sarif_file: trivy-results.sarif
 
+    - name: Install Kustomize
+      run: |
+        curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+        sudo mv kustomize /usr/local/bin/
+
     - name: Run KICS IaC Scan
       uses: checkmarx/kics-action@v1
       with:
-        path: deployments/sky-deployment.yaml
-        output_path: kics-results.json
-        format: json
+        path: 'base/ overlay/'
+        output_path: 'kics-results.json'
+        format: 'json'
 
     - name: Upload KICS Results
       uses: actions/upload-artifact@v4
       with:
-        name: kics-results
-        path: kics-results.json
+        name: 'kics-results'
+        path: 'kics-results.json'
 
     - name: Install Minikube
       run: |
@@ -96,23 +101,10 @@ jobs:
       run: |
         kubectl config current-context
 
-    - name: Create ArgoCD Namespace
+    - name: Apply Kustomize Configuration
       run: |
-        kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
+        kustomize build overlay/dev | kubectl apply -f -
 
-    - name: Create Service Account
+    - name: Verify Deployment
       run: |
-        kubectl create serviceaccount sky-service-account -n argocd --dry-run=client -o yaml | kubectl apply -f -
-
-    - name: Create Image Pull Secret in Minikube
-      run: |
-        # Optional: Remove this step if not needed for a public image
-        kubectl create secret docker-registry sky-access-token \
-          --docker-username=${{ secrets.DOCKER_USERNAME }} \
-          --docker-password=${{ secrets.DOCKER_PASSWORD }} \
-          --docker-server=https://index.docker.io/v1/ \
-          -n argocd --dry-run=client -o yaml | kubectl apply -f -
-
-    - name: Deploy to Minikube
-      run: |
-        kubectl apply -f deployments/sky-deployment.yaml
+        kubectl get pods -n argocd -l app=skye-app
