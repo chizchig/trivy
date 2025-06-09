@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment 
+metadata:
+  name: sky-deployment
+  namespace: argocd
+  labels:
+    app: skye-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: skye-app
+  strategy:
+    type: RollingUpdate
+    RollingUpdate:
+      maxiUnavailable: 0
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: skye-app
+    spec:
+      serviceAccountName: sky-service-account
+      imagePullSecrets:
+       - name: sky-access-token
+      securityContext:
+        runAsUser: 1000   # Non-root user ID
+        runAsGroup: 1000  # Non-root group ID
+        fsGroup: 1000     # Ensure group ownership of mounted volumes
+      containers:
+        - name: sky 
+          image: shadowhub/cocomaster
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000
+          volumeMounts:
+            - name: nginx-cache
+              mountPath: /var/cache/nginx  # Mounting emptyDir here
+              readOnly: false 
+          securityContext:
+            runAsUser: 0
+          resources:
+            limits: 
+              cpu: 10m
+              memory: 1Gi
+            requests:
+              cpu: 10m
+              memory: 512Mi
+      volumes: 
+        - name: nginx-cache
+          emptyDir: {}
+        - name: nginx-storage  # Temporary storage for NGINX cache
+          emptyDir: {}         # This is an emptyDir volume for temporary storage
