@@ -2,14 +2,16 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - ../../base/
-
 patches:
-  - |
-  
-    apiVersion: apps/v1
-    kind: Deployment
-    metadata:
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: sky-deployment
+        namespace: argocd
+      spec:
+        replicas: 4
+    target:
+      kind: Deployment
       name: sky-deployment
       namespace: argocd
-    spec:
-      replicas: 4
