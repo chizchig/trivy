@@ -23,27 +23,27 @@ This repository automates the deployment of the `skye-app` microservice to a Kub
 
 ---
 
-## ⚙️ GitHub Actions Workflow
+⚙️ GitHub Actions Workflow
 
 The GitHub Actions workflow performs the following steps:
 
-### 🔐 Security Scanning
+🔐 Security Scanning
 - **Trivy:** Scans the container image `shadowhub/cocomaster` for vulnerabilities.
 - **KICS:** Scans Kubernetes YAML files for infrastructure misconfigurations.
 
-### ⚒️ Kubernetes Setup
+⚒️ Kubernetes Setup
 - Installs `kubectl`, `minikube`, and `kustomize`.
 - Boots up a Minikube cluster for test deployments.
 - Validates Kustomize overlays using `kustomize build`.
 
-### 🚀 Deployment
+🚀 Deployment
 - Uses `kustomize build` to render manifests from overlays.
 - Applies them using `kubectl apply`.
 - Verifies the deployment via `kubectl get pods`.
 
 ---
 
-## 🔍 Example Kustomize Patch (Overlay: `dev`)
+🔍 Example Kustomize Patch (Overlay: `dev`)
 
 ```yaml
 patches:
@@ -62,7 +62,7 @@ patches:
 
 This increases the number of replicas in the dev environment without changing the base file.
 
-## 🚦 ArgoCD Application Configuration
+🚦 ArgoCD Application Configuration
 
 apiVersion: argoproj.io/v1alpha1
 kind: Application
@@ -85,20 +85,20 @@ spec:
 
 ArgoCD continuously syncs and manages the desired state declared in the Git repository.
 
-## ✅ Prerequisites
+✅ Prerequisites
 A Kubernetes cluster (Minikube, EKS, GKE, etc.)
 
 ArgoCD installed in the argocd namespace
 
 GitHub Actions secrets (optional for DockerHub credentials or K8s secrets)
 
-## 📦 Manual Deployment Command
+📦 Manual Deployment Command
 
 kustomize build overlay/dev | kubectl apply -f -
 
 
 
-## 📈 CI/CD Benefits
+📈 CI/CD Benefits
 ✔️ GitOps-enabled deployments via ArgoCD
 
 ✔️ Static and container vulnerability scans
@@ -107,5 +107,5 @@ kustomize build overlay/dev | kubectl apply -f -
 
 ✔️ Environment-specific configurations with overlays
 
-## 👥 Maintainers
+👥 Maintainers
    chizchig – GitHub
