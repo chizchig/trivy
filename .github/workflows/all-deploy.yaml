@@ -20,98 +20,148 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: Verify System Architecture
-      run: |
-        uname -a
-        arch
+      - name: Verify System Architecture
+        run: |
+          uname -a
+          arch
 
-    - name: Install Docker
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common
-        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/docker.gpg
-        sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-        sudo apt-get update
-        sudo apt-get install -y docker-ce docker-ce-cli containerd.io
-        sudo systemctl start docker
-        sudo systemctl enable docker
+      - name: Install Docker
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common
+          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/docker.gpg
+          sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+          sudo apt-get update
+          sudo apt-get install -y docker-ce docker-ce-cli containerd.io
+          sudo systemctl start docker
+          sudo systemctl enable docker
 
-    - name: Pull Docker Image
-      run: |
-        docker pull shadowhub/cocomaster:20240506044802
+      - name: Pull Docker Image
+        run: |
+          docker pull shadowhub/cocomaster:20240506044802
 
-    - name: Run Trivy Vulnerability Scanner
-      uses: aquasecurity/trivy-action@0.30.0
-      with:
-        image-ref: 'shadowhub/cocomaster:20240506044802'
-        format: 'sarif'
-        output: 'trivy-results.sarif'
-        severity: 'CRITICAL,HIGH'
-        ignore-unfixed: true
-        scanners: 'vuln'
+      - name: Run Trivy Vulnerability Scanner
+        uses: aquasecurity/trivy-action@0.30.0
+        with:
+          image-ref: 'shadowhub/cocomaster:20240506044802'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+          ignore-unfixed: true
+          scanners: 'vuln'
 
-    - name: Upload Trivy Results
-      uses: github/codeql-action/upload-sarif@v3
-      with:
-        sarif_file: trivy-results.sarif
+      - name: Upload Trivy Results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-results.sarif
 
-    - name: Install Kustomize
-      run: |
-        curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
-        sudo mv kustomize /usr/local/bin/
+      - name: Install Kustomize
+        run: |
+          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+          sudo mv kustomize /usr/local/bin/
 
-    - name: Run KICS IaC Scan
-      uses: checkmarx/kics-action@v1
-      with:
-        path: 'base/ overlay/'
-        output_path: 'kics-results.json'
-        output_formats: 'json'
-        fail_on: 'HIGH'
+      - name: Run KICS IaC Scan
+        uses: checkmarx/kics-action@v1
+        with:
+          path: 'base/ overlay/'
+          output_path: 'kics-results.json'
+          output_formats: 'json'
+          fail_on: 'HIGH'
 
-    - name: Upload KICS Results
-      uses: actions/upload-artifact@v4
-      with:
-        name: 'kics-results'
-        path: 'kics-results.json'
+      - name: Upload KICS Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: 'kics-results'
+          path: 'kics-results.json'
 
-    - name: Install Minikube
-      run: |
-        curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
-        chmod +x minikube-linux-amd64
-        sudo mv minikube-linux-amd64 /usr/local/bin/minikube
+      - name: Install Minikube
+        run: |
+          curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+          chmod +x minikube-linux-amd64
+          sudo mv minikube-linux-amd64 /usr/local/bin/minikube
 
-    - name: Install kubectl
-      run: |
-        curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-        chmod +x kubectl
-        sudo mv kubectl /usr/local/bin/
+      - name: Install kubectl
+        run: |
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+          sudo mv kubectl /usr/local/bin/
 
-    - name: Start Minikube
-      run: |
-        minikube start --driver=docker
+      - name: Start Minikube
+        run: |
+          minikube start --driver=docker
 
-    - name: Set up Kubeconfig for Minikube
-      run: |
-        mkdir -p $HOME/.kube
-        minikube update-context
+      - name: Set up Kubeconfig for Minikube
+        run: |
+          mkdir -p $HOME/.kube
+          minikube update-context
 
-    - name: Verify Kubernetes Context
-      run: |
-        kubectl config current-context
+      - name: Verify Kubernetes Context
+        run: |
+          kubectl config current-context
 
-    - name: Debug Kustomize Files
-      run: |
-        ls -la base/
-        cat base/kustomization.yaml
-        kustomize build overlay/dev --enable-alpha-plugins
+      - name: Debug Kustomize Files
+        run: |
+          ls -la base/
+          cat base/kustomization.yaml
+          kustomize build overlay/dev --enable-alpha-plugins
 
-    - name: Apply Kustomize Configuration
-      run: |
-        kustomize build overlay/dev | kubectl apply -f -
+      - name: Apply Kustomize Configuration
+        run: |
+          kustomize build overlay/dev | kubectl apply -f -
 
-    - name: Verify Deployment
-      run: |
-        kubectl get pods -n argocd -l app=skye-app
+      - name: Wait for ArgoCD to be ready
+        run: |
+          echo "Waiting for ArgoCD deployments to be ready..."
+          kubectl wait --for=condition=available --timeout=600s deployment/argocd-server -n argocd || echo "argocd-server not found or not ready"
+          kubectl wait --for=condition=available --timeout=600s deployment/argocd-repo-server -n argocd || echo "argocd-repo-server not found or not ready"
+          
+          # Check for different possible names of the application controller
+          if kubectl get deployment argocd-application-controller -n argocd &> /dev/null; then
+            kubectl wait --for=condition=available --timeout=600s deployment/argocd-application-controller -n argocd || echo "argocd-application-controller not ready"
+          elif kubectl get deployment argocd-app-controller -n argocd &> /dev/null; then
+            kubectl wait --for=condition=available --timeout=600s deployment/argocd-app-controller -n argocd || echo "argocd-app-controller not ready"
+          else
+            echo "Application controller deployment not found. Please check ArgoCD installation."
+          fi
+          
+          echo "Checking overall ArgoCD status..."
+          kubectl get pods -n argocd
+
+      - name: Get ArgoCD admin password
+        run: |
+          ARGO_PWD=$(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d)
+          echo "ArgoCD admin password: $ARGO_PWD"
+          echo "ARGO_PWD=$ARGO_PWD" >> $GITHUB_ENV
+
+      - name: Apply ArgoCD configurations
+        run: |
+          kubectl apply -f argocd.yml
+          kubectl apply -f argocdserver.yml
+
+      - name: Provide ArgoCD Access Instructions
+        run: |
+          echo "To access ArgoCD locally, follow these steps:"
+          echo "1. Ensure you have kubectl installed and configured to access your cluster"
+          echo "2. Run the following command to set up port-forwarding:"
+          echo "   kubectl port-forward svc/argocd-server -n argocd 8081:80"
+          echo "3. Open your web browser and go to http://localhost:8081"
+          echo "4. Log in with the following credentials:"
+          echo "   Username: admin"
+          echo "   Password: $ARGO_PWD"
+          echo ""
+          echo "If you encounter login issues, try these steps:"
+          echo "1. Ensure port-forwarding is active"
+          echo "2. If the password doesn't work, retrieve it manually with:"
+          echo "   kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath=\"{.data.password}\" | base64 -d"
+          echo "3. If issues persist, check ArgoCD logs with:"
+          echo "   kubectl logs deployment/argocd-server -n argocd"
+
+      - name: Verify Deployment
+        run: |
+          kubectl get applications -n argocd
+          kubectl get ingress -n argocd
+          kubectl get pods -n argocd -l app=skye-app
+          echo "Current ArgoCD password: $ARGO_PWD"
