@@ -138,8 +138,8 @@ jobs:
 
       - name: Apply ArgoCD configurations
         run: |
-          kubectl apply -f argocd.yml
-          kubectl apply -f argocdserver.yml
+          kubectl apply -f argocd.yaml
+          kubectl apply -f argocdserver.yaml
 
       - name: Provide ArgoCD Access Instructions
         run: |
