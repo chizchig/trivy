@@ -1,14 +1,14 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: sky-dev
+  name: skye-app
   namespace: argocd 
 spec:
   project: default
   source:
     repoURL: https://github.com/chizchig/trivy.git
     targetRevision: HEAD
-    path: resource/dev
+    path: overlay/dev
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: argocd-namespace
